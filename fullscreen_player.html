@@ -1,0 +1,27 @@
+<!doctype html><html><head><style>
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden}
+video{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;background:#000}
+</style></head><body>
+<video id="v" src="http://localhost:8899/play_src.mp4" playsinline preload="auto"></video>
+<script>
+const v=document.getElementById('v');
+v.muted=false; v.volume=1.0;
+v.preload='auto';
+// HOLD at scene 0 (paused on the first frame) during warmup so the video does NOT
+// advance before recording starts. Playback begins ONLY when the capture is ready.
+v.pause();
+let started=false;
+async function checkStart(){
+  if(started) return;
+  try{
+    const r=await fetch('http://localhost:8899/start.flag',{cache:'no-store'});
+    if(r.ok){
+      started=true;
+      v.currentTime=0;           // ensure we start from the very first frame
+      v.play().then(()=>console.log('PLAYING')).catch(e=>console.error(e));
+    }
+  }catch(e){}
+}
+setInterval(checkStart, 100);
+</script>
+</body></html>
